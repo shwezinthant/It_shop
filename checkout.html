@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>IT shop</title>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="custom.js"></script>
+  </head>
+  <body>
+    <h1>IT shop</h1>
+    <h3>
+      <a href="index.html">Shop</a> |
+      <a href="checkout.html">Check Out (<span id="count"></span>)</a>
+    </h3>
+    <table border="1" cellpadding="15" cellspacing="0">
+      <caption>
+        Checkout table
+      </caption>
+      <thead>
+        <tr>
+          <th>No.</th>
+          <th>Name</th>
+          <th>Brand</th>
+          <th>Price MMK</th>
+          <th>Qty</th>
+          <th>Sub total</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <br /><br />
+
+    <button id="order">Order</button>
+
+    <script type="text/javascript">
+      $(document).ready(function () {
+        getData();
+        function getData() {
+          var j = 1;
+          var total = 0;
+          var shop_str = localStorage.getItem("it_shop");
+          if (shop_str) {
+            var shop_arr = JSON.parse(shop_str);
+            var html = "";
+            //shop_arr = [{"id":1,"name":"earphone","price":45000,"brand":"Sony","qty":2},{"id":2,"name":"keyboard","price":105000,"brand":"Tony","qty":1}]
+            $.each(shop_arr, function (i, v) {
+              //v= {id: 1, name: "earphone", price: 45000, brand: "Sony", qty: 2}
+              var sub_total = v.qty * v.price;
+              html += `
+					<tr>
+					<td>${j++}
+					</td>
+					<td>${v.name}
+					</td>
+					<td>${v.brand}
+					</td>
+					<td>${v.price}
+					</td>
+					<td>
+						<button class="min" data-item_i="${v.id}">-</button>
+						${v.qty}
+						<button class="max" data-item_i="${v.id}">+</button>
+					</td>
+					<td>
+					${sub_total}
+					</td>
+					</tr>
+					`;
+              total += sub_total;
+            });
+
+            html += `<tr>
+				<td colspan="5">Total</td>
+				<td>${total}</td>
+				</tr>`;
+            $("#tbody").html(html);
+          } else {
+            html = "";
+            $("#tbody").html(html);
+          }
+          count();
+        }
+
+        $("#tbody").on("click", ".min", function () {
+          var item_id = $(this).data("item_i");
+          var shop_str = localStorage.getItem("it_shop");
+          if (shop_str) {
+            var shop_arr = JSON.parse(shop_str);
+            $.each(shop_arr, function (i, v) {
+              if (item_id == v.id) {
+                v.qty--;
+                if (v.qty == 0) {
+                  shop_arr.splice(i, 1);
+                }
+              }
+
+              var shopData = JSON.stringify(shop_arr);
+              localStorage.setItem("it_shop", shopData);
+              getData();
+            });
+          }
+        });
+
+        // max button increse in local storage qty.
+        $("#tbody").on("click", ".max", function () {
+          var item_id = $(this).data("item_i");
+          var shop_str = localStorage.getItem("it_shop");
+          if (shop_str) {
+            var shop_arr = JSON.parse(shop_str);
+            $.each(shop_arr, function (i, v) {
+              if (item_id == v.id) {
+                v.qty++;
+              }
+              var shopData = JSON.stringify(shop_arr);
+              localStorage.setItem("it_shop", shopData);
+              getData();
+            });
+          }
+        });
+
+        $("#order").click(function () {
+          //   localStorage.clear();    //delete all
+          localStorage.removeItem("it_shop"); //delete one
+          getData();
+        });
+      });
+    </script>
+  </body>
+</html>
